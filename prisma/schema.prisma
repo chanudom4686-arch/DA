@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Apartment {
+  id                String   @id @default(uuid())
+  name              String
+  ownerName         String?
+  ownerPhone        String?
+  address           String?
+  bankName          String?
+  bankAccountName   String?
+  bankAccountNumber String?
+  qrCodeUrl         String?
+  billNote          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  rooms Room[]
+}
+
+model Room {
+  id              String   @id @default(uuid())
+  apartmentId     String
+  apartment       Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  
+  name            String
+  status          String   @default("AVAILABLE") // AVAILABLE, OCCUPIED, MAINTENANCE
+  isDaily         Boolean  @default(false)
+  rent            Float    @default(0)
+  commonFee       Float    @default(0)
+  
+  elecMeterType   String   @default("SINGLE") // SINGLE, DOUBLE
+  waterMeterType  String   @default("UNIT") // UNIT, FLAT, PERSON_MIN
+  occupantsCount  Int      @default(1) // สำหรับคำนวณขั้นต่ำต่อคน
+  
+  elecRate        Float?
+  waterRate       Float?
+  waterMinCharge  Float?
+  waterFlatRate   Float?
+  
+  paymentDate     Int?     // วันที่ที่ต้องชำระ (เช่น วันที่ 1-5)
+  note            String?
+
+  tenantName      String?
+  tenantPhone     String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  invoices        Invoice[]
+
+  @@unique([apartmentId, name])
+}
+
+model Invoice {
+  id               String   @id @default(uuid())
+  roomId           String
+  room             Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  billingMonth     Int      // 1-12
+  billingYear      Int
+  billDate         DateTime
+  checkIn          DateTime?  // สำหรับห้องรายวัน
+  checkOut         DateTime?  // สำหรับห้องรายวัน
+  
+  oldElecMeter     Float?
+  newElecMeter     Float?
+  oldElecMeterB    Float?
+  newElecMeterB    Float?
+  
+  oldWaterMeter    Float?
+  newWaterMeter    Float?
+  
+  elecTotal        Float    @default(0)
+  waterTotal       Float    @default(0)
+  rentTotal        Float    @default(0)
+  commonFeeTotal   Float    @default(0)
+  grandTotal       Float    @default(0)
+  
+  isPaid           Boolean  @default(false)
+  note             String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([roomId, billingMonth, billingYear])
+}
