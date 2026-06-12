@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createApartment, updateApartment } from '@/actions/apartment'
+import { createApartment, updateApartment, deleteApartment } from '@/actions/apartment'
 import { uploadImage } from '@/actions/upload'
 import Image from 'next/image'
 
@@ -115,11 +115,38 @@ export default function ApartmentForm({ initialData }: { initialData?: any }) {
           <textarea name="billNote" value={formData.billNote} onChange={handleChange} className="input" rows={3} placeholder="เช่น ค่าน้ำขั้นต่ำ 100 บาท/คน" />
         </div>
       </div>
-      <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-        <button type="button" onClick={() => router.back()} className="btn btn-outline">ยกเลิก</button>
-        <button type="submit" disabled={loading} className="btn btn-primary">
-          {loading ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
-        </button>
+      <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          {initialData?.id && (
+            <button 
+              type="button" 
+              onClick={async () => {
+                if (confirm('คุณแน่ใจหรือไม่ว่าจะลบหอพักนี้? ข้อมูลห้องพักและบิลทั้งหมดจะถูกลบไปด้วยและไม่สามารถกู้คืนได้')) {
+                  setLoading(true)
+                  try {
+                    await deleteApartment(initialData.id)
+                    router.push('/')
+                    router.refresh()
+                  } catch (error) {
+                    alert('เกิดข้อผิดพลาดในการลบ')
+                    setLoading(false)
+                  }
+                }
+              }}
+              className="btn btn-outline" 
+              style={{ borderColor: '#ef4444', color: '#ef4444' }}
+              disabled={loading}
+            >
+              🗑️ ลบหอพัก
+            </button>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button type="button" onClick={() => router.back()} className="btn btn-outline">ยกเลิก</button>
+          <button type="submit" disabled={loading} className="btn btn-primary">
+            {loading ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
+          </button>
+        </div>
       </div>
     </form>
   )

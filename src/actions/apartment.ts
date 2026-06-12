@@ -48,3 +48,12 @@ export async function updateApartment(id: string, data: any) {
   revalidatePath(`/apartments/${id}`)
   return apartment
 }
+
+export async function deleteApartment(id: string) {
+  const apartment = await prisma.apartment.delete({
+    where: { id }
+  })
+  revalidatePath('/')
+  revalidatePath('/apartments')
+  return apartment
+}
