@@ -2,6 +2,12 @@ import { getMonthlyReport } from '@/actions/report'
 import Link from 'next/link'
 import PrintButton from '@/components/PrintButton'
 import { getOverdueDays } from '@/lib/utils'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { BarChart3, CheckCircle2, AlertTriangle, Eye, FileSpreadsheet } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,132 +21,163 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const report = await getMonthlyReport(month, year)
 
   return (
-    <div>
-      <div className="no-print header">
-        <div>
-          <h1 className="title">รายงานสรุปรายรับ</h1>
-          <p className="subtitle">สรุปยอดบิลและสถานะการชำระเงินประจำเดือน</p>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-border no-print">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <BarChart3 className="w-8 h-8 text-primary" />
+            รายงานสรุปรายรับ
+          </h1>
+          <p className="text-muted-foreground text-sm">สรุปยอดบิลและสถานะการชำระเงินประจำเดือน</p>
         </div>
         <PrintButton />
       </div>
 
-      <div className="no-print card" style={{ marginBottom: '2rem' }}>
-        <form className="grid grid-cols-3" style={{ alignItems: 'end' }}>
-          <div>
-            <label className="label">เดือน</label>
-            <select name="month" defaultValue={month} className="input">
-              {[...Array(12)].map((_, i) => (
-                <option key={i+1} value={i+1}>เดือน {i+1}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">ปี (ค.ศ.)</label>
-            <input type="number" name="year" defaultValue={year} className="input" />
-          </div>
-          <div>
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>ดูรายงาน</button>
-          </div>
-        </form>
+      <Card className="no-print border-purple-100 dark:border-purple-900/50 shadow-sm">
+        <CardContent className="p-6">
+          <form className="flex flex-col sm:flex-row items-end gap-4">
+            <div className="w-full sm:w-1/3 space-y-2">
+              <Label htmlFor="month">เดือน</Label>
+              <div className="relative">
+                <select 
+                  name="month" 
+                  id="month"
+                  defaultValue={month} 
+                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {[...Array(12)].map((_, i) => (
+                    <option key={i+1} value={i+1}>เดือน {i+1}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="w-full sm:w-1/3 space-y-2">
+              <Label htmlFor="year">ปี (ค.ศ.)</Label>
+              <Input type="number" id="year" name="year" defaultValue={year} />
+            </div>
+            <div className="w-full sm:w-1/3">
+              <Button type="submit" className="w-full gap-2">
+                <FileSpreadsheet className="w-4 h-4" />
+                ดูรายงาน
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <div className="print-header hidden mb-8 text-center print:block">
+        <h2 className="text-2xl font-bold">รายงานสรุปรายรับ ประจำเดือน {month}/{year}</h2>
       </div>
 
-      <div className="print-header" style={{ display: 'none', marginBottom: '2rem', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>รายงานสรุปรายรับ ประจำเดือน {month}/{year}</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-purple-50 border-purple-200 dark:bg-purple-950/20 dark:border-purple-900">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-purple-700 dark:text-purple-400">ยอดเรียกเก็บทั้งหมด</h3>
+            <p className="text-3xl font-bold text-purple-900 dark:text-purple-300 mt-2">
+              {report.summary.grandTotal.toLocaleString()} <span className="text-lg font-normal">บ.</span>
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-900">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-green-700 dark:text-green-400">เก็บเงินแล้ว</h3>
+            <p className="text-3xl font-bold text-green-900 dark:text-green-300 mt-2">
+              {report.summary.collected.toLocaleString()} <span className="text-lg font-normal">บ.</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-900">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-red-700 dark:text-red-400">ค้างชำระ</h3>
+            <p className="text-3xl font-bold text-red-900 dark:text-red-300 mt-2">
+              {report.summary.uncollected.toLocaleString()} <span className="text-lg font-normal">บ.</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-muted-foreground">จำนวนบิล</h3>
+            <p className="text-3xl font-bold mt-2">
+              {report.invoices.length} <span className="text-lg font-normal">ใบ</span>
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-4" style={{ marginBottom: '2rem' }}>
-        <div className="card" style={{ backgroundColor: '#faf5ff', border: '1px solid #e9d5ff' }}>
-          <h3 style={{ fontSize: '0.875rem', color: '#6b21a8' }}>ยอดเรียกเก็บทั้งหมด</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#581c87', marginTop: '0.5rem' }}>{report.summary.grandTotal.toLocaleString()} บ.</p>
-        </div>
-        <div className="card" style={{ backgroundColor: '#dcfce7', border: '1px solid #bbf7d0' }}>
-          <h3 style={{ fontSize: '0.875rem', color: '#166534' }}>เก็บเงินแล้ว</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#14532d', marginTop: '0.5rem' }}>{report.summary.collected.toLocaleString()} บ.</p>
-        </div>
-        <div className="card" style={{ backgroundColor: '#fee2e2', border: '1px solid #fecaca' }}>
-          <h3 style={{ fontSize: '0.875rem', color: '#991b1b' }}>ค้างชำระ</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#7f1d1d', marginTop: '0.5rem' }}>{report.summary.uncollected.toLocaleString()} บ.</p>
-        </div>
-        <div className="card">
-          <h3 style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>จำนวนบิล</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '0.5rem' }}>{report.invoices.length} ใบ</p>
-        </div>
-      </div>
-
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
-          <thead>
-            <tr style={{ backgroundColor: 'var(--bg-color)', borderBottom: '1px solid var(--border-color)' }}>
-              <th style={{ padding: '1rem' }}>ห้องพัก</th>
-              <th style={{ padding: '1rem' }}>ผู้เช่า</th>
-              <th style={{ padding: '1rem', textAlign: 'right' }}>ค่าเช่า</th>
-              <th style={{ padding: '1rem', textAlign: 'right' }}>น้ำ+ไฟ</th>
-              <th style={{ padding: '1rem', textAlign: 'right' }}>อื่นๆ</th>
-              <th style={{ padding: '1rem', textAlign: 'right' }}>ยอดรวม</th>
-              <th style={{ padding: '1rem', textAlign: 'center' }}>สถานะ</th>
-              <th className="no-print" style={{ padding: '1rem', textAlign: 'center' }}>ลิงก์</th>
-            </tr>
-          </thead>
-          <tbody>
-            {report.invoices.map(inv => (
-              <tr key={inv.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <td style={{ padding: '1rem' }}>
-                  <strong>{inv.room.name}</strong>
-                  <br/>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{inv.room.apartment.name}</span>
-                </td>
-                <td style={{ padding: '1rem' }}>{inv.room.tenantName || '-'}</td>
-                <td style={{ padding: '1rem', textAlign: 'right' }}>{inv.rentTotal.toLocaleString()}</td>
-                <td style={{ padding: '1rem', textAlign: 'right' }}>{(inv.waterTotal + inv.elecTotal).toLocaleString()}</td>
-                <td style={{ padding: '1rem', textAlign: 'right' }}>
-                  {inv.customItems ? inv.customItems.reduce((s: number, i: any) => s + i.amount, 0).toLocaleString() : '0'}
-                </td>
-                <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 'bold' }}>{inv.grandTotal.toLocaleString()}</td>
-                <td style={{ padding: '1rem', textAlign: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'center' }}>
-                    <span style={{ 
-                      padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem',
-                      backgroundColor: inv.isPaid ? '#dcfce7' : '#fee2e2',
-                      color: inv.isPaid ? '#166534' : '#991b1b'
-                    }}>
-                      {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
-                    </span>
-                    {!inv.isPaid && getOverdueDays(inv.billDate, inv.room.paymentDate) > 0 && (
-                      <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 'bold' }}>
-                        เลยกำหนด {getOverdueDays(inv.billDate, inv.room.paymentDate)} วัน
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="no-print" style={{ padding: '1rem', textAlign: 'center' }}>
-                  <Link href={`/invoices/${inv.id}`} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}>
-                    ดูบิล
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {report.invoices.length === 0 && (
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left print:border print:border-gray-300">
+            <thead className="bg-muted/50 text-muted-foreground border-b border-border print:bg-gray-100">
               <tr>
-                <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  ไม่มีข้อมูลบิลในเดือนนี้
-                </td>
+                <th className="font-medium py-3 px-4 print:border print:border-gray-300">ห้องพัก</th>
+                <th className="font-medium py-3 px-4 print:border print:border-gray-300">ผู้เช่า</th>
+                <th className="font-medium py-3 px-4 text-right print:border print:border-gray-300">ค่าเช่า</th>
+                <th className="font-medium py-3 px-4 text-right print:border print:border-gray-300">น้ำ+ไฟ</th>
+                <th className="font-medium py-3 px-4 text-right print:border print:border-gray-300">อื่นๆ</th>
+                <th className="font-medium py-3 px-4 text-right print:border print:border-gray-300">ยอดรวม</th>
+                <th className="font-medium py-3 px-4 text-center print:border print:border-gray-300">สถานะ</th>
+                <th className="font-medium py-3 px-4 text-center no-print">จัดการ</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          .no-print { display: none !important; }
-          .print-header { display: block !important; }
-          body { background: white; color: black; }
-          .card { border: none; box-shadow: none; padding: 0; }
-          table { border: 1px solid #ccc; }
-          th, td { border: 1px solid #ccc; }
-        }
-      `}} />
+            </thead>
+            <tbody className="divide-y divide-border">
+              {report.invoices.map(inv => (
+                <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
+                  <td className="py-3 px-4 print:border print:border-gray-300">
+                    <strong className="font-medium">{inv.room.name}</strong>
+                    <br/>
+                    <span className="text-xs text-muted-foreground">{inv.room.apartment.name}</span>
+                  </td>
+                  <td className="py-3 px-4 print:border print:border-gray-300">{inv.room.tenantName || '-'}</td>
+                  <td className="py-3 px-4 text-right print:border print:border-gray-300">
+                    {inv.rentTotal.toNumber().toLocaleString()}
+                  </td>
+                  <td className="py-3 px-4 text-right print:border print:border-gray-300">
+                    {(inv.waterTotal.toNumber() + inv.elecTotal.toNumber()).toLocaleString()}
+                  </td>
+                  <td className="py-3 px-4 text-right print:border print:border-gray-300">
+                    {inv.customItems ? inv.customItems.reduce((s: number, i: any) => s + i.amount.toNumber(), 0).toLocaleString() : '0'}
+                  </td>
+                  <td className="py-3 px-4 text-right font-semibold print:border print:border-gray-300">
+                    {inv.grandTotal.toNumber().toLocaleString()}
+                  </td>
+                  <td className="py-3 px-4 text-center print:border print:border-gray-300">
+                    <div className="flex flex-col gap-1 items-center">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center justify-center gap-1
+                        ${inv.isPaid ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}
+                      >
+                        {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
+                      </span>
+                      {!inv.isPaid && getOverdueDays(inv.billDate, inv.room.paymentDate) > 0 && (
+                        <span className="text-[10px] text-red-500 font-bold">
+                          เลยกำหนด {getOverdueDays(inv.billDate, inv.room.paymentDate)} วัน
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-center no-print">
+                    <Link href={`/invoices/${inv.id}`}>
+                      <Button variant="ghost" size="sm" className="h-8 text-xs gap-1">
+                        <Eye className="w-3 h-3" />
+                        ดูบิล
+                      </Button>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+              {report.invoices.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-muted-foreground print:border print:border-gray-300">
+                    ไม่มีข้อมูลบิลในเดือนนี้
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   )
 }

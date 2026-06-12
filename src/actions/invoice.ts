@@ -36,30 +36,30 @@ export async function createInvoice(data: any) {
 
   if (room.isDaily) {
     // ห้องรายวัน คิดแค่ค่าเช่าที่กรอกมา
-    rentTotal = data.rentTotal !== undefined ? parseFloat(data.rentTotal) : (room.rent || 0)
+    rentTotal = data.rentTotal !== undefined ? parseFloat(data.rentTotal) : (room.rent ? room.rent.toNumber() : 0)
   } else {
     // ห้องรายเดือน คิดตามปกติ
-    rentTotal = room.rent || 0
-    commonFeeTotal = room.commonFee || 0
+    rentTotal = room.rent ? room.rent.toNumber() : 0
+    commonFeeTotal = room.commonFee ? room.commonFee.toNumber() : 0
 
     if (room.elecRate && data.newElecMeter !== undefined && data.oldElecMeter !== undefined) {
       const usage = Math.max(0, data.newElecMeter - data.oldElecMeter)
-      elecTotal += usage * room.elecRate
+      elecTotal += usage * room.elecRate.toNumber()
     }
     if (room.elecMeterType === 'DOUBLE' && room.elecRate && data.newElecMeterB !== undefined && data.oldElecMeterB !== undefined) {
       const usageB = Math.max(0, data.newElecMeterB - data.oldElecMeterB)
-      elecTotal += usageB * room.elecRate
+      elecTotal += usageB * room.elecRate.toNumber()
     }
 
     if (room.waterMeterType === 'FLAT') {
-      waterTotal = room.waterFlatRate || 0
+      waterTotal = room.waterFlatRate ? room.waterFlatRate.toNumber() : 0
     } else if (room.waterMeterType === 'UNIT' || room.waterMeterType === 'PERSON_MIN') {
       if (room.waterRate && data.newWaterMeter !== undefined && data.oldWaterMeter !== undefined) {
         const usage = Math.max(0, data.newWaterMeter - data.oldWaterMeter)
-        waterTotal = usage * room.waterRate
+        waterTotal = usage * room.waterRate.toNumber()
         
         if (room.waterMeterType === 'PERSON_MIN' && room.waterMinCharge) {
-          const minCharge = room.waterMinCharge * (room.occupantsCount || 1)
+          const minCharge = room.waterMinCharge.toNumber() * (room.occupantsCount || 1)
           if (waterTotal < minCharge) {
             waterTotal = minCharge
           }
@@ -141,29 +141,29 @@ export async function updateInvoiceDetails(id: string, data: any) {
   let commonFeeTotal = 0
 
   if (room.isDaily) {
-    rentTotal = data.rentTotal !== undefined ? parseFloat(data.rentTotal) : (room.rent || 0)
+    rentTotal = data.rentTotal !== undefined ? parseFloat(data.rentTotal) : (room.rent ? room.rent.toNumber() : 0)
   } else {
-    rentTotal = room.rent || 0
-    commonFeeTotal = room.commonFee || 0
+    rentTotal = room.rent ? room.rent.toNumber() : 0
+    commonFeeTotal = room.commonFee ? room.commonFee.toNumber() : 0
 
     if (room.elecRate && data.newElecMeter !== undefined && data.oldElecMeter !== undefined) {
       const usage = Math.max(0, data.newElecMeter - data.oldElecMeter)
-      elecTotal += usage * room.elecRate
+      elecTotal += usage * room.elecRate.toNumber()
     }
     if (room.elecMeterType === 'DOUBLE' && room.elecRate && data.newElecMeterB !== undefined && data.oldElecMeterB !== undefined) {
       const usageB = Math.max(0, data.newElecMeterB - data.oldElecMeterB)
-      elecTotal += usageB * room.elecRate
+      elecTotal += usageB * room.elecRate.toNumber()
     }
 
     if (room.waterMeterType === 'FLAT') {
-      waterTotal = room.waterFlatRate || 0
+      waterTotal = room.waterFlatRate ? room.waterFlatRate.toNumber() : 0
     } else if (room.waterMeterType === 'UNIT' || room.waterMeterType === 'PERSON_MIN') {
       if (room.waterRate && data.newWaterMeter !== undefined && data.oldWaterMeter !== undefined) {
         const usage = Math.max(0, data.newWaterMeter - data.oldWaterMeter)
-        waterTotal = usage * room.waterRate
+        waterTotal = usage * room.waterRate.toNumber()
         
         if (room.waterMeterType === 'PERSON_MIN' && room.waterMinCharge) {
-          const minCharge = room.waterMinCharge * (room.occupantsCount || 1)
+          const minCharge = room.waterMinCharge.toNumber() * (room.occupantsCount || 1)
           if (waterTotal < minCharge) {
             waterTotal = minCharge
           }

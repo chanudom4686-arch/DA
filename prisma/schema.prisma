@@ -32,17 +32,17 @@ model Room {
   name            String
   status          String   @default("AVAILABLE") // AVAILABLE, OCCUPIED, MAINTENANCE
   isDaily         Boolean  @default(false)
-  rent            Float    @default(0)
-  commonFee       Float    @default(0)
+  rent            Decimal  @default(0) @db.Decimal(10, 2)
+  commonFee       Decimal  @default(0) @db.Decimal(10, 2)
   
   elecMeterType   String   @default("SINGLE") // SINGLE, DOUBLE
   waterMeterType  String   @default("UNIT") // UNIT, FLAT, PERSON_MIN
   occupantsCount  Int      @default(1) // สำหรับคำนวณขั้นต่ำต่อคน
   
-  elecRate        Float?
-  waterRate       Float?
-  waterMinCharge  Float?
-  waterFlatRate   Float?
+  elecRate        Decimal? @db.Decimal(10, 2)
+  waterRate       Decimal? @db.Decimal(10, 2)
+  waterMinCharge  Decimal? @db.Decimal(10, 2)
+  waterFlatRate   Decimal? @db.Decimal(10, 2)
   
   paymentDate     Int?     // วันที่ที่ต้องชำระ (เช่น วันที่ 1-5)
   note            String?
@@ -72,19 +72,19 @@ model Invoice {
   checkIn          DateTime?  // สำหรับห้องรายวัน
   checkOut         DateTime?  // สำหรับห้องรายวัน
   
-  oldElecMeter     Float?
-  newElecMeter     Float?
-  oldElecMeterB    Float?
-  newElecMeterB    Float?
+  oldElecMeter    Decimal? @db.Decimal(10, 2)
+  newElecMeter    Decimal? @db.Decimal(10, 2)
+  oldElecMeterB   Decimal? @db.Decimal(10, 2)
+  newElecMeterB   Decimal? @db.Decimal(10, 2)
   
-  oldWaterMeter    Float?
-  newWaterMeter    Float?
+  oldWaterMeter   Decimal? @db.Decimal(10, 2)
+  newWaterMeter   Decimal? @db.Decimal(10, 2)
   
-  elecTotal        Float    @default(0)
-  waterTotal       Float    @default(0)
-  rentTotal        Float    @default(0)
-  commonFeeTotal   Float    @default(0)
-  grandTotal       Float    @default(0)
+  elecTotal       Decimal  @default(0) @db.Decimal(10, 2)
+  waterTotal      Decimal  @default(0) @db.Decimal(10, 2)
+  rentTotal       Decimal  @default(0) @db.Decimal(10, 2)
+  commonFeeTotal  Decimal  @default(0) @db.Decimal(10, 2)
+  grandTotal      Decimal  @default(0) @db.Decimal(10, 2)
   
   isPaid           Boolean  @default(false)
   note             String?
@@ -100,5 +100,5 @@ model InvoiceItem {
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   name      String
-  amount    Float
+  amount    Decimal @db.Decimal(10, 2)
 }

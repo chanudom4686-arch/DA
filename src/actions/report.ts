@@ -32,20 +32,20 @@ export async function getMonthlyReport(month: number, year: number) {
   let collected = 0
 
   invoices.forEach(inv => {
-    totalRent += inv.rentTotal
-    totalElec += inv.elecTotal
-    totalWater += inv.waterTotal
-    totalCommonFee += inv.commonFeeTotal
+    totalRent += inv.rentTotal.toNumber()
+    totalElec += inv.elecTotal.toNumber()
+    totalWater += inv.waterTotal.toNumber()
+    totalCommonFee += inv.commonFeeTotal.toNumber()
     
     let special = 0
     if (inv.customItems) {
-      special = inv.customItems.reduce((sum: number, item: any) => sum + item.amount, 0)
+      special = inv.customItems.reduce((sum: number, item: any) => sum + item.amount.toNumber(), 0)
     }
     totalSpecial += special
     
-    grandTotal += inv.grandTotal
+    grandTotal += inv.grandTotal.toNumber()
     if (inv.isPaid) {
-      collected += inv.grandTotal
+      collected += inv.grandTotal.toNumber()
     }
   })
 

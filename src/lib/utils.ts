@@ -1,18 +1,26 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
 export function getOverdueDays(billDate: Date, paymentDate: number | null): number {
   if (!paymentDate) return 0
+  const dueDate = new Date(billDate)
+  dueDate.setDate(paymentDate)
+  // If payment date is earlier in the month than the bill date, it means next month
+  if (dueDate < billDate) {
+    dueDate.setMonth(dueDate.getMonth() + 1)
+  }
+  const now = new Date()
   
-  // Due date is usually the `paymentDate` of the month following the `billDate`
-  // Actually, wait. If billDate is May 31, paymentDate is 5. Due date is June 5.
-  // So due date = new Date(billDate.getFullYear(), billDate.getMonth() + 1, paymentDate)
-  // Let's use that logic.
-  const dueDate = new Date(billDate.getFullYear(), billDate.getMonth() + 1, paymentDate)
+  // Reset time to start of day for accurate day calculation
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const due = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate())
   
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  dueDate.setHours(0, 0, 0, 0)
-  
-  const diffTime = today.getTime() - dueDate.getTime()
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+  const diffTime = today.getTime() - due.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   
   return diffDays > 0 ? diffDays : 0
 }

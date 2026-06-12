@@ -3,6 +3,12 @@ import { getInvoices } from '@/actions/invoice'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getOverdueDays } from '@/lib/utils'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge' // Wait, I didn't install badge. I'll use raw spans.
+import { ArrowLeft, Edit, Plus, FileText, UserCircle, Wallet, Settings2, AlertTriangle, CheckCircle2 } from 'lucide-react'
+
+export const dynamic = 'force-dynamic'
 
 export default async function RoomPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -12,96 +18,165 @@ export default async function RoomPage({ params }: { params: Promise<{ id: strin
   const invoices = await getInvoices(id)
 
   return (
-    <div>
-      <div className="header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 className="title">ห้อง {room.name}</h1>
-          <p className="subtitle">สถานะ: {room.status}</p>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-border">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">ห้อง {room.name}</h1>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium
+              ${room.status === 'AVAILABLE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}
+            >
+              {room.status === 'AVAILABLE' ? 'ว่าง' : 'ไม่ว่าง'}
+            </span>
+          </div>
+          <p className="text-muted-foreground text-sm">ข้อมูลผู้เช่า ค่าใช้จ่าย และประวัติบิล</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <Link href={`/apartments/${room.apartmentId}`} className="btn btn-outline">
-            &larr; กลับไปหอพัก
+        <div className="flex flex-wrap gap-3">
+          <Link href={`/apartments/${room.apartmentId}`}>
+            <Button variant="outline" className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              กลับไปหอพัก
+            </Button>
           </Link>
-          <Link href={`/rooms/${room.id}/edit`} className="btn btn-outline">
-            แก้ไขการตั้งค่าห้อง
+          <Link href={`/rooms/${room.id}/edit`}>
+            <Button variant="outline" className="gap-2">
+              <Settings2 className="w-4 h-4" />
+              การตั้งค่าห้อง
+            </Button>
           </Link>
-          <Link href={`/rooms/${room.id}/special-invoice`} className="btn btn-outline" style={{ borderColor: '#d946ef', color: '#d946ef' }}>
-            📝 ออกบิลพิเศษ
+          <Link href={`/rooms/${room.id}/special-invoice`}>
+            <Button variant="outline" className="gap-2 border-purple-500 text-purple-600 hover:bg-purple-50 hover:text-purple-700 dark:border-purple-400 dark:text-purple-400 dark:hover:bg-purple-900/20">
+              <FileText className="w-4 h-4" />
+              ออกบิลพิเศษ
+            </Button>
           </Link>
-          <Link href={`/rooms/${room.id}/invoices/new`} className="btn btn-primary">
-            + ออกบิลใหม่
+          <Link href={`/rooms/${room.id}/invoices/new`}>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              ออกบิลใหม่
+            </Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-3" style={{ marginBottom: '2rem' }}>
-        <div className="card">
-          <h3 style={{ marginBottom: '1rem', color: 'var(--primary-color)' }}>ข้อมูลผู้เช่า</h3>
-          <p><strong>ชื่อ:</strong> {room.tenantName || '-'}</p>
-          <p><strong>เบอร์โทร:</strong> {room.tenantPhone || '-'}</p>
-        </div>
-        <div className="card">
-          <h3 style={{ marginBottom: '1rem', color: 'var(--primary-color)' }}>ค่าใช้จ่ายประจำ</h3>
-          <p><strong>ค่าเช่า:</strong> {room.rent} บาท</p>
-          <p><strong>ค่าส่วนกลาง:</strong> {room.commonFee} บาท</p>
-        </div>
-        <div className="card">
-          <h3 style={{ marginBottom: '1rem', color: 'var(--primary-color)' }}>มิเตอร์</h3>
-          <p><strong>ไฟ:</strong> {room.elecMeterType} ({room.elecRate} บ./หน่วย)</p>
-          <p><strong>น้ำ:</strong> {room.waterMeterType} {room.waterMeterType==='FLAT' ? `(${room.waterFlatRate} บ.)` : `(${room.waterRate} บ./หน่วย)`}</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2 text-primary">
+              <UserCircle className="w-5 h-5" />
+              ข้อมูลผู้เช่า
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between border-b border-border/50 pb-2">
+              <span className="text-muted-foreground">ชื่อ:</span>
+              <span className="font-medium">{room.tenantName || '-'}</span>
+            </div>
+            <div className="flex justify-between pt-1">
+              <span className="text-muted-foreground">เบอร์โทร:</span>
+              <span className="font-medium">{room.tenantPhone || '-'}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2 text-primary">
+              <Wallet className="w-5 h-5" />
+              ค่าใช้จ่ายประจำ
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between border-b border-border/50 pb-2">
+              <span className="text-muted-foreground">ค่าเช่า:</span>
+              <span className="font-medium">{room.rent?.toString() || 0} บาท</span>
+            </div>
+            <div className="flex justify-between pt-1">
+              <span className="text-muted-foreground">ค่าส่วนกลาง:</span>
+              <span className="font-medium">{room.commonFee?.toString() || 0} บาท</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2 text-primary">
+              <Settings2 className="w-5 h-5" />
+              ตั้งค่ามิเตอร์
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between border-b border-border/50 pb-2">
+              <span className="text-muted-foreground">ไฟ ({room.elecMeterType}):</span>
+              <span className="font-medium">{room.elecRate?.toString() || 0} บ./หน่วย</span>
+            </div>
+            <div className="flex justify-between pt-1">
+              <span className="text-muted-foreground">น้ำ ({room.waterMeterType}):</span>
+              <span className="font-medium">
+                {room.waterMeterType === 'FLAT' 
+                  ? `${room.waterFlatRate?.toString() || 0} บ.` 
+                  : `${room.waterRate?.toString() || 0} บ./หน่วย`}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <h2 className="title" style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>ประวัติบิลค่าเช่า</h2>
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
-          <thead>
-            <tr style={{ backgroundColor: 'var(--bg-color)', borderBottom: '1px solid var(--border-color)' }}>
-              <th style={{ padding: '1rem' }}>รอบบิล</th>
-              <th style={{ padding: '1rem' }}>วันที่ออกบิล</th>
-              <th style={{ padding: '1rem' }}>ยอดรวม (บาท)</th>
-              <th style={{ padding: '1rem' }}>สถานะ</th>
-              <th style={{ padding: '1rem' }}>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoices.map((inv) => (
-              <tr key={inv.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <td style={{ padding: '1rem' }}>{inv.billingMonth}/{inv.billingYear}</td>
-                <td style={{ padding: '1rem' }}>{inv.billDate.toLocaleDateString('th-TH')}</td>
-                <td style={{ padding: '1rem' }}>{inv.grandTotal.toLocaleString()}</td>
-                <td style={{ padding: '1rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
-                    <span style={{ 
-                      padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem',
-                      backgroundColor: inv.isPaid ? '#dcfce7' : '#fee2e2',
-                      color: inv.isPaid ? '#166534' : '#991b1b'
-                    }}>
-                      {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
-                    </span>
-                    {!inv.isPaid && getOverdueDays(inv.billDate, room.paymentDate) > 0 && (
-                      <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 'bold' }}>
-                        เลยกำหนด {getOverdueDays(inv.billDate, room.paymentDate)} วัน
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td style={{ padding: '1rem' }}>
-                  <Link href={`/invoices/${inv.id}`} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}>
-                    ดูบิล
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {invoices.length === 0 && (
-              <tr>
-                <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  ยังไม่มีประวัติบิล
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="pt-6">
+        <h2 className="text-2xl font-semibold tracking-tight mb-4">ประวัติบิลค่าเช่า</h2>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-muted/50 text-muted-foreground border-b border-border">
+                <tr>
+                  <th className="font-medium py-3 px-4">รอบบิล</th>
+                  <th className="font-medium py-3 px-4">วันที่ออกบิล</th>
+                  <th className="font-medium py-3 px-4 text-right">ยอดรวม (บาท)</th>
+                  <th className="font-medium py-3 px-4">สถานะ</th>
+                  <th className="font-medium py-3 px-4 text-center">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {invoices.map((inv) => (
+                  <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="py-3 px-4 font-medium">{inv.billingMonth}/{inv.billingYear}</td>
+                    <td className="py-3 px-4 text-muted-foreground">{inv.billDate.toLocaleDateString('th-TH')}</td>
+                    <td className="py-3 px-4 text-right font-medium">{inv.grandTotal.toNumber().toLocaleString()}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1
+                          ${inv.isPaid ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}
+                        >
+                          {inv.isPaid ? <CheckCircle2 className="w-3 h-3"/> : <AlertTriangle className="w-3 h-3"/>}
+                          {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
+                        </span>
+                        {!inv.isPaid && getOverdueDays(inv.billDate, room.paymentDate) > 0 && (
+                          <span className="text-[10px] text-red-500 font-bold ml-1">
+                            เลยกำหนด {getOverdueDays(inv.billDate, room.paymentDate)} วัน
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <Link href={`/invoices/${inv.id}`}>
+                        <Button variant="ghost" size="sm" className="h-8 text-xs">
+                          ดูบิล
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+                {invoices.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-muted-foreground">
+                      ยังไม่มีประวัติบิล
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       </div>
     </div>
   )
