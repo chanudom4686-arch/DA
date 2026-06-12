@@ -12,7 +12,7 @@ export async function getInvoices(roomId: string) {
 
 export async function getAllInvoices() {
   return await prisma.invoice.findMany({
-    include: { room: { include: { apartment: true } } },
+    include: { room: { include: { apartment: true } }, customItems: true },
     orderBy: [{ createdAt: 'desc' }]
   })
 }
@@ -20,7 +20,7 @@ export async function getAllInvoices() {
 export async function getInvoice(id: string) {
   return await prisma.invoice.findUnique({
     where: { id },
-    include: { room: { include: { apartment: true } } }
+    include: { room: { include: { apartment: true } }, customItems: true }
   })
 }
 
@@ -68,10 +68,16 @@ export async function createInvoice(data: any) {
     }
   }
 
-  const grandTotal = elecTotal + waterTotal + rentTotal + commonFeeTotal
+  let customItemsTotal = 0
+  if (data.customItems && Array.isArray(data.customItems)) {
+    customItemsTotal = data.customItems.reduce((sum: number, item: any) => sum + (parseFloat(item.amount) || 0), 0)
+  }
+
+  const grandTotal = elecTotal + waterTotal + rentTotal + commonFeeTotal + customItemsTotal
 
   const invoice = await prisma.invoice.create({
     data: {
+      type: data.type || 'REGULAR',
       roomId: data.roomId,
       billingMonth: data.billingMonth,
       billingYear: data.billingYear,
@@ -90,6 +96,12 @@ export async function createInvoice(data: any) {
       rentTotal,
       commonFeeTotal,
       grandTotal,
+      customItems: data.customItems && data.customItems.length > 0 ? {
+        create: data.customItems.map((item: any) => ({
+          name: item.name,
+          amount: parseFloat(item.amount) || 0
+        }))
+      } : undefined
     }
   })
   
@@ -160,11 +172,17 @@ export async function updateInvoiceDetails(id: string, data: any) {
     }
   }
 
-  const grandTotal = elecTotal + waterTotal + rentTotal + commonFeeTotal
+  let customItemsTotal = 0
+  if (data.customItems && Array.isArray(data.customItems)) {
+    customItemsTotal = data.customItems.reduce((sum: number, item: any) => sum + (parseFloat(item.amount) || 0), 0)
+  }
+
+  const grandTotal = elecTotal + waterTotal + rentTotal + commonFeeTotal + customItemsTotal
 
   const invoice = await prisma.invoice.update({
     where: { id },
     data: {
+      type: data.type || 'REGULAR',
       billingMonth: data.billingMonth,
       billingYear: data.billingYear,
       billDate: data.billDate,
@@ -182,6 +200,13 @@ export async function updateInvoiceDetails(id: string, data: any) {
       rentTotal,
       commonFeeTotal,
       grandTotal,
+      customItems: {
+        deleteMany: {},
+        create: data.customItems ? data.customItems.map((item: any) => ({
+          name: item.name,
+          amount: parseFloat(item.amount) || 0
+        })) : []
+      }
     }
   })
   

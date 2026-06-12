@@ -1,5 +1,6 @@
 import { getAllInvoices } from '@/actions/invoice'
 import Link from 'next/link'
+import { getOverdueDays } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,13 +38,20 @@ export default async function InvoicesIndexPage() {
                 <td style={{ padding: '1rem' }}>{inv.room.name} {inv.room.isDaily ? '(รายวัน)' : ''}</td>
                 <td style={{ padding: '1rem', fontWeight: 'bold' }}>{inv.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                 <td style={{ padding: '1rem' }}>
-                  <span style={{ 
-                    padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem',
-                    backgroundColor: inv.isPaid ? '#dcfce7' : '#fee2e2',
-                    color: inv.isPaid ? '#166534' : '#991b1b'
-                  }}>
-                    {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+                    <span style={{ 
+                      padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem',
+                      backgroundColor: inv.isPaid ? '#dcfce7' : '#fee2e2',
+                      color: inv.isPaid ? '#166534' : '#991b1b'
+                    }}>
+                      {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
+                    </span>
+                    {!inv.isPaid && getOverdueDays(inv.billDate, inv.room.paymentDate) > 0 && (
+                      <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 'bold' }}>
+                        เลยกำหนด {getOverdueDays(inv.billDate, inv.room.paymentDate)} วัน
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td style={{ padding: '1rem' }}>
                   <Link href={`/invoices/${inv.id}`} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}>

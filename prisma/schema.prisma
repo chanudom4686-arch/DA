@@ -63,6 +63,9 @@ model Invoice {
   roomId           String
   room             Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
   
+  type             String   @default("REGULAR") // REGULAR, SPECIAL
+  customItems      InvoiceItem[]
+  
   billingMonth     Int      // 1-12
   billingYear      Int
   billDate         DateTime
@@ -89,5 +92,13 @@ model Invoice {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  @@unique([roomId, billingMonth, billingYear])
+  // @@unique constraint removed to support multiple special invoices per month
+}
+
+model InvoiceItem {
+  id        String  @id @default(uuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  name      String
+  amount    Float
 }

@@ -27,6 +27,24 @@ export default function InvoiceForm({ roomId, roomData, lastInvoice, invoiceData
     note: invoiceData?.note || ''
   })
 
+  const [customItems, setCustomItems] = useState<{name: string, amount: number}[]>(
+    invoiceData?.customItems || []
+  )
+
+  const handleAddCustomItem = () => {
+    setCustomItems([...customItems, { name: '', amount: 0 }])
+  }
+
+  const handleCustomItemChange = (index: number, field: string, value: any) => {
+    const newItems = [...customItems]
+    newItems[index] = { ...newItems[index], [field]: value }
+    setCustomItems(newItems)
+  }
+
+  const handleRemoveCustomItem = (index: number) => {
+    setCustomItems(customItems.filter((_, i) => i !== index))
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const value = e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value
     
@@ -58,6 +76,7 @@ export default function InvoiceForm({ roomId, roomData, lastInvoice, invoiceData
     try {
       const payload = {
         ...formData,
+        customItems,
         billDate: new Date(formData.billDate)
       }
       if (invoiceData?.id) {
@@ -167,6 +186,30 @@ export default function InvoiceForm({ roomId, roomData, lastInvoice, invoiceData
             )}
           </>
         )}
+
+        <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ color: 'var(--primary-color)', margin: 0 }}>รายการเพิ่มเติม (เช่น ค่าปรับ, ค่าซ่อม)</h3>
+            <button type="button" onClick={handleAddCustomItem} className="btn btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}>
+              + เพิ่มรายการ
+            </button>
+          </div>
+          
+          {customItems.map((item, index) => (
+            <div key={index} style={{ display: 'flex', gap: '1rem', marginBottom: '0.5rem', alignItems: 'flex-start' }}>
+              <div style={{ flex: 2 }}>
+                <input type="text" placeholder="ชื่อรายการ (เช่น ค่าปรับ)" value={item.name} onChange={(e) => handleCustomItemChange(index, 'name', e.target.value)} className="input" required />
+              </div>
+              <div style={{ flex: 1 }}>
+                <input type="number" placeholder="จำนวนเงิน" value={item.amount || ''} onChange={(e) => handleCustomItemChange(index, 'amount', parseFloat(e.target.value) || 0)} className="input" required />
+              </div>
+              <button type="button" onClick={() => handleRemoveCustomItem(index)} className="btn" style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '0.5rem 0.75rem', border: 'none' }}>ลบ</button>
+            </div>
+          ))}
+          {customItems.length === 0 && (
+            <p style={{ color: 'var(--text-light)', fontSize: '0.9rem', fontStyle: 'italic', margin: 0 }}>ไม่มีรายการเพิ่มเติม</p>
+          )}
+        </div>
 
         <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
           <label className="label">หมายเหตุในบิล (ถ้ามี)</label>

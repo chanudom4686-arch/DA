@@ -13,7 +13,8 @@ export async function getMonthlyReport(month: number, year: number) {
         include: {
           apartment: true
         }
-      }
+      },
+      customItems: true
     },
     orderBy: {
       room: {
@@ -26,6 +27,7 @@ export async function getMonthlyReport(month: number, year: number) {
   let totalElec = 0
   let totalWater = 0
   let totalCommonFee = 0
+  let totalSpecial = 0
   let grandTotal = 0
   let collected = 0
 
@@ -34,6 +36,13 @@ export async function getMonthlyReport(month: number, year: number) {
     totalElec += inv.elecTotal
     totalWater += inv.waterTotal
     totalCommonFee += inv.commonFeeTotal
+    
+    let special = 0
+    if (inv.customItems) {
+      special = inv.customItems.reduce((sum: number, item: any) => sum + item.amount, 0)
+    }
+    totalSpecial += special
+    
     grandTotal += inv.grandTotal
     if (inv.isPaid) {
       collected += inv.grandTotal
@@ -47,6 +56,7 @@ export async function getMonthlyReport(month: number, year: number) {
       totalElec,
       totalWater,
       totalCommonFee,
+      totalSpecial,
       grandTotal,
       collected,
       uncollected: grandTotal - collected

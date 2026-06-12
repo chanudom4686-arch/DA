@@ -2,6 +2,7 @@ import { getRoom } from '@/actions/room'
 import { getInvoices } from '@/actions/invoice'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { getOverdueDays } from '@/lib/utils'
 
 export default async function RoomPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -23,6 +24,9 @@ export default async function RoomPage({ params }: { params: Promise<{ id: strin
           </Link>
           <Link href={`/rooms/${room.id}/edit`} className="btn btn-outline">
             แก้ไขการตั้งค่าห้อง
+          </Link>
+          <Link href={`/rooms/${room.id}/special-invoice`} className="btn btn-outline" style={{ borderColor: '#d946ef', color: '#d946ef' }}>
+            📝 ออกบิลพิเศษ
           </Link>
           <Link href={`/rooms/${room.id}/invoices/new`} className="btn btn-primary">
             + ออกบิลใหม่
@@ -67,13 +71,20 @@ export default async function RoomPage({ params }: { params: Promise<{ id: strin
                 <td style={{ padding: '1rem' }}>{inv.billDate.toLocaleDateString('th-TH')}</td>
                 <td style={{ padding: '1rem' }}>{inv.grandTotal.toLocaleString()}</td>
                 <td style={{ padding: '1rem' }}>
-                  <span style={{ 
-                    padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem',
-                    backgroundColor: inv.isPaid ? '#dcfce7' : '#fee2e2',
-                    color: inv.isPaid ? '#166534' : '#991b1b'
-                  }}>
-                    {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+                    <span style={{ 
+                      padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem',
+                      backgroundColor: inv.isPaid ? '#dcfce7' : '#fee2e2',
+                      color: inv.isPaid ? '#166534' : '#991b1b'
+                    }}>
+                      {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
+                    </span>
+                    {!inv.isPaid && getOverdueDays(inv.billDate, room.paymentDate) > 0 && (
+                      <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 'bold' }}>
+                        เลยกำหนด {getOverdueDays(inv.billDate, room.paymentDate)} วัน
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td style={{ padding: '1rem' }}>
                   <Link href={`/invoices/${inv.id}`} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}>

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import InvoiceActions from '@/components/InvoiceActions'
+import PrintInvoiceButton from '@/components/PrintInvoiceButton'
 import './print.css'
 
 export const dynamic = 'force-dynamic'
@@ -28,9 +29,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <Link href={`/rooms/${room.id}`} className="btn btn-outline">
               &larr; กลับไปหน้าห้องพัก
             </Link>
-            <button className="btn btn-primary print-button">
-              🖨️ สั่งพิมพ์ (Print)
-            </button>
+            <PrintInvoiceButton />
           </div>
           <InvoiceActions invoiceId={invoice.id} isPaid={invoice.isPaid} />
         </div>
@@ -154,6 +153,16 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               </tr>
             )}
 
+            {/* Custom Items */}
+            {invoice.customItems && invoice.customItems.length > 0 && invoice.customItems.map((item: any, idx: number) => (
+              <tr key={item.id || idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '0.75rem' }}>{item.name}</td>
+                <td style={{ padding: '0.75rem', textAlign: 'center' }}>1</td>
+                <td style={{ padding: '0.75rem', textAlign: 'center' }}>-</td>
+                <td style={{ padding: '0.75rem', textAlign: 'right' }}>{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              </tr>
+            ))}
+
             {/* Total Row */}
             <tr style={{ backgroundColor: '#e5e7eb', fontWeight: 'bold', borderTop: '2px solid #000', borderBottom: '2px solid #000' }}>
               <td colSpan={3} style={{ padding: '1rem', textAlign: 'right' }}>ยอดรวมสุทธิ (Grand Total)</td>
@@ -191,15 +200,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         )}
       </div>
 
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            document.querySelector('.print-button').addEventListener('click', function() {
-              window.print();
-            });
-          `
-        }}
-      />
+
     </div>
   )
 }

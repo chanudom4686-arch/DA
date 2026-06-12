@@ -1,6 +1,7 @@
 import { getMonthlyReport } from '@/actions/report'
 import Link from 'next/link'
 import PrintButton from '@/components/PrintButton'
+import { getOverdueDays } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,6 +75,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
               <th style={{ padding: '1rem' }}>ผู้เช่า</th>
               <th style={{ padding: '1rem', textAlign: 'right' }}>ค่าเช่า</th>
               <th style={{ padding: '1rem', textAlign: 'right' }}>น้ำ+ไฟ</th>
+              <th style={{ padding: '1rem', textAlign: 'right' }}>อื่นๆ</th>
               <th style={{ padding: '1rem', textAlign: 'right' }}>ยอดรวม</th>
               <th style={{ padding: '1rem', textAlign: 'center' }}>สถานะ</th>
               <th className="no-print" style={{ padding: '1rem', textAlign: 'center' }}>ลิงก์</th>
@@ -90,15 +92,25 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                 <td style={{ padding: '1rem' }}>{inv.room.tenantName || '-'}</td>
                 <td style={{ padding: '1rem', textAlign: 'right' }}>{inv.rentTotal.toLocaleString()}</td>
                 <td style={{ padding: '1rem', textAlign: 'right' }}>{(inv.waterTotal + inv.elecTotal).toLocaleString()}</td>
+                <td style={{ padding: '1rem', textAlign: 'right' }}>
+                  {inv.customItems ? inv.customItems.reduce((s: number, i: any) => s + i.amount, 0).toLocaleString() : '0'}
+                </td>
                 <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 'bold' }}>{inv.grandTotal.toLocaleString()}</td>
                 <td style={{ padding: '1rem', textAlign: 'center' }}>
-                  <span style={{ 
-                    padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem',
-                    backgroundColor: inv.isPaid ? '#dcfce7' : '#fee2e2',
-                    color: inv.isPaid ? '#166534' : '#991b1b'
-                  }}>
-                    {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'center' }}>
+                    <span style={{ 
+                      padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem',
+                      backgroundColor: inv.isPaid ? '#dcfce7' : '#fee2e2',
+                      color: inv.isPaid ? '#166534' : '#991b1b'
+                    }}>
+                      {inv.isPaid ? 'จ่ายแล้ว' : 'ค้างชำระ'}
+                    </span>
+                    {!inv.isPaid && getOverdueDays(inv.billDate, inv.room.paymentDate) > 0 && (
+                      <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 'bold' }}>
+                        เลยกำหนด {getOverdueDays(inv.billDate, inv.room.paymentDate)} วัน
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="no-print" style={{ padding: '1rem', textAlign: 'center' }}>
                   <Link href={`/invoices/${inv.id}`} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}>

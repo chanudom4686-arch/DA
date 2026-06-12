@@ -12,7 +12,7 @@ export async function getApartments() {
 export async function getApartment(id: string) {
   return await prisma.apartment.findUnique({
     where: { id },
-    include: { rooms: true }
+    include: { rooms: { include: { invoices: true }, orderBy: { name: 'asc' } } }
   })
 }
 

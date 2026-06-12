@@ -2,6 +2,7 @@ import { getApartment, getApartments } from '@/actions/apartment'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import ApartmentSwitcher from '@/components/ApartmentSwitcher'
+import { getOverdueDays } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,9 @@ export default async function ApartmentPage({ params }: { params: Promise<{ id: 
   }
 
   const allApts = await getApartments()
+
+  const currentMonth = new Date().getMonth() + 1
+  const currentYear = new Date().getFullYear()
 
   return (
     <div>
@@ -59,25 +63,34 @@ export default async function ApartmentPage({ params }: { params: Promise<{ id: 
       </div>
       
       <div className="grid grid-cols-4">
-        {apt.rooms.filter(r => !r.isDaily).map((room) => (
-          <Link key={room.id} href={`/rooms/${room.id}`} className="card" style={{ display: 'block' }}>
+        {apt.rooms.filter(r => !r.isDaily).map((room) => {
+          const hasCurrentMonthBill = room.invoices?.some((i: any) => i.billingMonth === currentMonth && i.billingYear === currentYear)
+          const overdueInvoices = room.invoices?.filter((i: any) => !i.isPaid && getOverdueDays(i.billDate, room.paymentDate) > 0)
+          const isOverdue = overdueInvoices && overdueInvoices.length > 0
+
+          return (
+          <Link key={room.id} href={`/rooms/${room.id}`} className="card" style={{ display: 'block', borderColor: isOverdue ? '#fca5a5' : undefined }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>ห้อง {room.name}</h3>
               <span style={{ 
                 fontSize: '0.75rem', 
                 padding: '0.25rem 0.5rem', 
                 borderRadius: '1rem',
-                backgroundColor: room.status === 'AVAILABLE' ? '#dcfce7' : '#f1f5f9',
-                color: room.status === 'AVAILABLE' ? '#166534' : '#475569',
+                backgroundColor: isOverdue ? '#fee2e2' : (room.status === 'AVAILABLE' ? '#dcfce7' : '#f1f5f9'),
+                color: isOverdue ? '#991b1b' : (room.status === 'AVAILABLE' ? '#166534' : '#475569'),
               }}>
-                {room.status === 'AVAILABLE' ? 'ว่าง' : 'ไม่ว่าง'}
+                {isOverdue ? '⚠️ ค้างชำระ' : (room.status === 'AVAILABLE' ? 'ว่าง' : 'ไม่ว่าง')}
               </span>
             </div>
             <div style={{ marginTop: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               <p>ค่าเช่า: {room.rent} บ.</p>
+              <p style={{ marginTop: '0.25rem', color: hasCurrentMonthBill ? '#16a34a' : '#ea580c', fontWeight: 'bold' }}>
+                {hasCurrentMonthBill ? '✅ ออกบิลแล้ว' : '⏳ รอออกบิล'}
+              </p>
             </div>
           </Link>
-        ))}
+          )
+        })}
         {apt.rooms.filter(r => !r.isDaily).length === 0 && (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
             ไม่มีห้องพักรายเดือน
