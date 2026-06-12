@@ -105,7 +105,7 @@ export default function ApartmentForm({ initialData }: { initialData?: any }) {
           <input type="file" accept="image/*" onChange={handleFileChange} className="input" style={{ padding: '0.5rem' }} />
           {preview && (
             <div style={{ marginTop: '1rem' }}>
-              <Image src={preview} alt="QR Code" width={150} height={150} style={{ objectFit: 'contain', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
+              <img src={preview} alt="QR Code" width={150} height={150} style={{ objectFit: 'contain', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
             </div>
           )}
         </div>

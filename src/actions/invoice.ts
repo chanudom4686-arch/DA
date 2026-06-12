@@ -94,6 +94,7 @@ export async function createInvoice(data: any) {
   })
   
   revalidatePath(`/rooms/${data.roomId}`)
+  revalidatePath('/reports')
   return invoice
 }
 
@@ -105,6 +106,7 @@ export async function updateInvoice(id: string, data: any) {
     data
   })
   revalidatePath(`/invoices/${id}`)
+  revalidatePath('/reports')
   return invoice
 }
 export async function deleteInvoice(id: string) {
@@ -113,6 +115,7 @@ export async function deleteInvoice(id: string) {
     await prisma.invoice.delete({ where: { id } })
     revalidatePath(`/rooms/${invoice.roomId}`)
     revalidatePath(`/invoices`)
+    revalidatePath('/reports')
   }
 }
 
@@ -184,5 +187,6 @@ export async function updateInvoiceDetails(id: string, data: any) {
   
   revalidatePath(`/rooms/${data.roomId}`)
   revalidatePath(`/invoices/${id}`)
+  revalidatePath('/reports')
   return invoice
 }

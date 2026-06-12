@@ -1,5 +1,6 @@
 import { getMonthlyReport } from '@/actions/report'
 import Link from 'next/link'
+import PrintButton from '@/components/PrintButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,9 +20,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
           <h1 className="title">รายงานสรุปรายรับ</h1>
           <p className="subtitle">สรุปยอดบิลและสถานะการชำระเงินประจำเดือน</p>
         </div>
-        <button onClick={() => {}} className="btn btn-outline print-button">
-          🖨️ พิมพ์รายงาน
-        </button>
+        <PrintButton />
       </div>
 
       <div className="no-print card" style={{ marginBottom: '2rem' }}>
@@ -119,15 +118,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         </table>
       </div>
 
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            document.querySelector('.print-button').addEventListener('click', function() {
-              window.print();
-            });
-          `
-        }}
-      />
+
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           .no-print { display: none !important; }
