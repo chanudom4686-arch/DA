@@ -33,6 +33,7 @@ export async function createApartment(data: any) {
   const apartment = await prisma.apartment.create({
     data
   })
+  revalidatePath('/')
   revalidatePath('/apartments')
   return apartment
 }
@@ -42,6 +43,7 @@ export async function updateApartment(id: string, data: any) {
     where: { id },
     data
   })
+  revalidatePath('/')
   revalidatePath('/apartments')
   revalidatePath(`/apartments/${id}`)
   return apartment
