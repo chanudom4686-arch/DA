@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation'
 import { getOverdueDays } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge' // Wait, I didn't install badge. I'll use raw spans.
 import { ArrowLeft, Edit, Plus, FileText, UserCircle, Wallet, Settings2, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
