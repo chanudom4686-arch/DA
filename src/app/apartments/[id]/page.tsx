@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import ApartmentSwitcher from '@/components/ApartmentSwitcher'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ApartmentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const apt = await getApartment(id)

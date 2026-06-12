@@ -1,6 +1,8 @@
 import { getMonthlyReport } from '@/actions/report'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ month?: string, year?: string }> }) {
   const params = await searchParams
   

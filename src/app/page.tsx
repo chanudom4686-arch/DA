@@ -1,6 +1,8 @@
 import { getApartments } from '@/actions/apartment'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default async function Dashboard() {
   const apartments = await getApartments()
 

@@ -25,7 +25,6 @@ export default function RootLayout({
             </div>
             <div className="navbar-links">
               <Link href="/">หน้าหลัก</Link>
-              <Link href="/apartments">หอพัก</Link>
               <Link href="/invoices">รวมบิล</Link>
               <Link href="/reports">รายงาน</Link>
             </div>

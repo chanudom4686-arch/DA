@@ -5,6 +5,8 @@ import Image from 'next/image'
 import InvoiceActions from '@/components/InvoiceActions'
 import './print.css'
 
+export const dynamic = 'force-dynamic'
+
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const invoice = await getInvoice(id)
