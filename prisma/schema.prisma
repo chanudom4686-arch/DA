@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Apartment {
+  id                String   @id @default(uuid())
+  name              String
+  ownerName         String?
+  ownerPhone        String?
+  address           String?
+  bankName          String?
+  bankAccountName   String?
+  bankAccountNumber String?
+  qrCodeUrl         String?
+  billNote          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  rooms Room[]
+}
+
+model Room {
+  id              String   @id @default(uuid())
+  apartmentId     String
+  apartment       Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  
+  name            String
+  status          String   @default("AVAILABLE") // AVAILABLE, OCCUPIED, MAINTENANCE
+  isDaily         Boolean  @default(false)
+  rent            Decimal  @default(0) @db.Decimal(10, 2)
+  commonFee       Decimal  @default(0) @db.Decimal(10, 2)
+  
+  elecMeterType   String   @default("SINGLE") // SINGLE, DOUBLE
+  waterMeterType  String   @default("UNIT") // UNIT, FLAT, PERSON_MIN
+  occupantsCount  Int      @default(1) // สำหรับคำนวณขั้นต่ำต่อคน
+  
+  elecRate        Decimal? @db.Decimal(10, 2)
+  waterRate       Decimal? @db.Decimal(10, 2)
+  waterMinCharge  Decimal? @db.Decimal(10, 2)
+  waterFlatRate   Decimal? @db.Decimal(10, 2)
+  
+  paymentDate     Int?     // วันที่ที่ต้องชำระ (เช่น วันที่ 1-5)
+  note            String?
+
+  tenantName      String?
+  tenantPhone     String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  invoices        Invoice[]
+
+  @@unique([apartmentId, name])
+}
+
+model Invoice {
+  id               String   @id @default(uuid())
+  roomId           String
+  room             Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  type             String   @default("REGULAR") // REGULAR, SPECIAL
+  customItems      InvoiceItem[]
+  
+  billingMonth     Int      // 1-12
+  billingYear      Int
+  billDate         DateTime
+  checkIn          DateTime?  // สำหรับห้องรายวัน
+  checkOut         DateTime?  // สำหรับห้องรายวัน
+  
+  oldElecMeter    Decimal? @db.Decimal(10, 2)
+  newElecMeter    Decimal? @db.Decimal(10, 2)
+  oldElecMeterB   Decimal? @db.Decimal(10, 2)
+  newElecMeterB   Decimal? @db.Decimal(10, 2)
+  
+  oldWaterMeter   Decimal? @db.Decimal(10, 2)
+  newWaterMeter   Decimal? @db.Decimal(10, 2)
+  
+  elecTotal       Decimal  @default(0) @db.Decimal(10, 2)
+  waterTotal      Decimal  @default(0) @db.Decimal(10, 2)
+  rentTotal       Decimal  @default(0) @db.Decimal(10, 2)
+  commonFeeTotal  Decimal  @default(0) @db.Decimal(10, 2)
+  grandTotal      Decimal  @default(0) @db.Decimal(10, 2)
+  
+  isPaid           Boolean  @default(false)
+  note             String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // @@unique constraint removed to support multiple special invoices per month
+}
+
+model InvoiceItem {
+  id        String  @id @default(uuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  name      String
+  amount    Decimal @db.Decimal(10, 2)
+}
